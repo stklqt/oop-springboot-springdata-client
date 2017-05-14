@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Room</th>
+        <th>Track</th>
+        <th>Speakers</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="event : ${events}">
+        <td th:text="${event.title}"/>
+        <td th:utext="${event.description}"></td>
+        <td th:text="${event.startTime}"></td>
+        <td th:text="${event.endTime}"></td>
+        <td th:text="${event.room}"></td>
+        <td th:text="${event.track}"></td>
+        <td th:each="speaker : ${event.speakers}">
+            <span th:text="${speaker.firstName}"></span>
+            <span th:text="${speaker.lastName}"></span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</html>
