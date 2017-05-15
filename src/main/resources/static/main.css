@@ -7,7 +7,17 @@ table {
 }
 
 td, th {
-    border: 1px solid #999;
+    border: 0;
     padding: 0.5rem;
     text-align: left;
+}
+
+.agenda-header {
+    background-color: darkcyan;
+    color: white;
+}
+
+.agenda-header p {
+    font-size: 36px;
+    padding-left: 20px;
 }

@@ -21,9 +21,12 @@
         <td th:text="${event.endTime}"></td>
         <td th:text="${event.room}"></td>
         <td th:text="${event.track}"></td>
-        <td th:each="speaker : ${event.speakers}">
-            <span th:text="${speaker.firstName}"></span>
-            <span th:text="${speaker.lastName}"></span>
+        <td>
+            <div th:each="speaker : ${event.speakers}">
+                <span th:text="${speaker.firstName}"></span>
+                <span th:text="${speaker.lastName}"></span>
+                <p></p>
+            </div>
         </td>
     </tr>
     </tbody>
