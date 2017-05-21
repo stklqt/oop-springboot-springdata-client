@@ -4,9 +4,9 @@ import de.andrena.springworkshop.dto.EventDTO;
 import de.andrena.springworkshop.dto.SpeakerDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
-import org.springframework.hateoas.client.Traverson;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -19,22 +19,25 @@ import java.util.stream.Collectors;
 @Component
 public class EventDaoImpl implements EventDao {
 
-	private final Traverson traverson;
+	private static final String BASE_URL = "http://localhost:8090";
 	private RestTemplate restTemplate;
 
 	@Autowired
-	public EventDaoImpl(Traverson traverson, RestTemplate restTemplate) {
-		this.traverson = traverson;
+	public EventDaoImpl(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
 	}
 
 
 	@Override
 	public List<EventDTO> getAllEvents() {
-		Resources<Resource<EventDTO>> eventResponse = traverson.follow("events").toObject(new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
-		});
-		injectSpeakers(eventResponse);
-		return mapToDTOList(eventResponse);
+		Link eventsURL = getLinkForRef("events", BASE_URL);
+		if (eventsURL != null) {
+			Resources<Resource<EventDTO>> eventResponse = sendRequest(eventsURL.expand(Collections.emptyMap()).getHref(), new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
+			});
+			injectSpeakers(eventResponse);
+			return mapToDTOList(eventResponse);
+		}
+		return null;
 	}
 
 	private List<EventDTO> mapToDTOList(Resources<Resource<EventDTO>> eventResponse) {
@@ -47,7 +50,7 @@ public class EventDaoImpl implements EventDao {
 			};
 			for (Resource<EventDTO> event : eventResponse) {
 				if (event.hasLink("speakers")) {
-					Resources<Resource<SpeakerDTO>> speakerResources = sendRequest(event.getLink("speakers").getHref(), speakerType);
+					Resources<Resource<SpeakerDTO>> speakerResources = sendRequest(event.getLink("speakers").expand(Collections.emptyMap()).getHref(), speakerType);
 					if (speakerResources != null) {
 						List<SpeakerDTO> speakerDTOList = speakerResources.getContent().stream().map(Resource::getContent).collect(Collectors.toList());
 						event.getContent().setSpeakers(speakerDTOList);
@@ -59,7 +62,10 @@ public class EventDaoImpl implements EventDao {
 
 	@Override
 	public List<EventDTO> getEventsWithTitleContaining(String title) {
-		Resources<Resource<EventDTO>> eventResponse = traverson.follow("events", "search", "findByTitleContaining").withTemplateParameters(Collections.singletonMap("title", title)).toObject(new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
+		Link eventsLink = getLinkForRef("events", BASE_URL);
+		Link searchLink = getLinkForRef("search", eventsLink.expand(Collections.emptyMap()).getHref());
+		Link findByTitleContainingLink = getLinkForRef("findByTitleContaining", searchLink.expand(Collections.emptyMap()).getHref());
+		Resources<Resource<EventDTO>> eventResponse = sendRequest(findByTitleContainingLink.expand(Collections.singletonMap("title", title)).getHref(), new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
 		});
 		injectSpeakers(eventResponse);
 		return mapToDTOList(eventResponse);
@@ -67,10 +73,24 @@ public class EventDaoImpl implements EventDao {
 
 	@Override
 	public List<EventDTO> getEventsWithDescriptionContaining(String description) {
-		Resources<Resource<EventDTO>> eventResponse = traverson.follow("events", "search", "findByDescriptionContaining").withTemplateParameters(Collections.singletonMap("description", description)).toObject(new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
+		Link eventsLink = getLinkForRef("events", BASE_URL);
+		Link searchLink = getLinkForRef("search", eventsLink.expand(Collections.emptyMap()).getHref());
+		Link findByDescriptionContainingLink = getLinkForRef("findByDescriptionContaining", searchLink.expand(Collections.emptyMap()).getHref());
+
+		Resources<Resource<EventDTO>> eventResponse = sendRequest(findByDescriptionContainingLink.expand(Collections.singletonMap("description", description)).getHref(), new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
 		});
 		injectSpeakers(eventResponse);
 		return mapToDTOList(eventResponse);
+	}
+
+	private Link getLinkForRef(String rel, String url) {
+		ResponseEntity<Resource<Object>> response = restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<Resource<Object>>() {
+		});
+		if (response != null && response.hasBody()) {
+			Resource<Object> body = response.getBody();
+			return body.getLink(rel);
+		}
+		return null;
 	}
 
 	private <T> T sendRequest(String url, ParameterizedTypeReference<T> type) {
