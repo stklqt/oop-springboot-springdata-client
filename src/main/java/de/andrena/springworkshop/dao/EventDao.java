@@ -1,14 +1,13 @@
 package de.andrena.springworkshop.dao;
 
 import de.andrena.springworkshop.dto.EventDTO;
-
-import java.util.List;
+import org.springframework.hateoas.PagedResources;
 
 public interface EventDao {
 
-    List<EventDTO> getAllEvents();
+    PagedResources<EventDTO> getAllEvents(int page);
 
-    List<EventDTO> getEventsWithTitleContaining(String title);
+    PagedResources<EventDTO> getEventsWithTitleContaining(String title, int page);
 
-    List<EventDTO> getEventsWithDescriptionContaining(String description);
+    PagedResources<EventDTO> getEventsWithDescriptionContaining(String description, int page);
 }

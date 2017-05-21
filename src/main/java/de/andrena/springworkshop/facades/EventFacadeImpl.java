@@ -3,9 +3,8 @@ package de.andrena.springworkshop.facades;
 import de.andrena.springworkshop.dao.EventDao;
 import de.andrena.springworkshop.dto.EventDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class EventFacadeImpl implements EventFacade {
@@ -14,17 +13,17 @@ public class EventFacadeImpl implements EventFacade {
     private EventDao eventDao;
 
     @Override
-    public List<EventDTO> getAllEvents() {
-        return eventDao.getAllEvents();
+    public PagedResources<EventDTO> getAllEvents(int page) {
+        return eventDao.getAllEvents(page);
     }
 
     @Override
-    public List<EventDTO> getEventsWithDescriptionContaining(String description){
-        return eventDao.getEventsWithDescriptionContaining(description);
+    public PagedResources<EventDTO> getEventsWithDescriptionContaining(String description, int page) {
+        return eventDao.getEventsWithDescriptionContaining(description, page);
     }
 
     @Override
-    public List<EventDTO> getEventWithTitle(String title) {
-        return eventDao.getEventsWithTitleContaining(title);
+    public PagedResources<EventDTO> getEventWithTitle(String title, int page) {
+        return eventDao.getEventsWithTitleContaining(title, page);
     }
 }

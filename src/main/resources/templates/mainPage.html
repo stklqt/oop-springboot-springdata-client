@@ -22,7 +22,7 @@
 
     <h2>Search:</h2>
     <form method="get" action="search">
-        <input type="text" name="title" placeholder="...by title containing" />
+        <input type="text" name="title" placeholder="...by title containing"/>
         <button class="btn" type="submit">Search!</button>
     </form>
     <hr/>
@@ -30,6 +30,19 @@
     <h2>All Events:</h2>
     <div th:unless="${#lists.isEmpty(events)}">
         <div th:replace="tableFragment :: table"></div>
+    </div>
+    <div th:if="${pagination != null}">
+        <div th:if="${pagination.totalPages != 1}">
+            <div>
+                <span th:text="|Page ${pagination.number+1} of ${pagination.totalPages}|"/>
+            </div>
+            <div th:if="${pagination.number &gt; 0}">
+                <a th:href="@{/agenda(page=${pagination.number-1})}">previous Page</a>
+            </div>
+            <div th:if="${pagination.number + 1 &lt; pagination.totalPages}">
+                <a th:href="@{/agenda(page=${pagination.number+1})}">next Page</a>
+            </div>
+        </div>
     </div>
 
 </div>

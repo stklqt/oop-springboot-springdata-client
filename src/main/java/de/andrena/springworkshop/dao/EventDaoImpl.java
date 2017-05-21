@@ -4,6 +4,7 @@ import de.andrena.springworkshop.dto.EventDTO;
 import de.andrena.springworkshop.dto.SpeakerDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.client.Traverson;
@@ -12,9 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class EventDaoImpl implements EventDao {
@@ -30,18 +33,25 @@ public class EventDaoImpl implements EventDao {
 
 
 	@Override
-	public List<EventDTO> getAllEvents() {
-		Resources<Resource<EventDTO>> eventResponse = traverson.follow("events").toObject(new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
-		});
+	public PagedResources<EventDTO> getAllEvents(int page) {
+		PagedResources<Resource<EventDTO>> eventResponse = traverson
+				.follow("events")
+				.withTemplateParameters(Collections.unmodifiableMap(Stream.of(
+						new SimpleEntry<String, Object>("page", page),
+						new SimpleEntry<String, Object>("size", 5))
+						.collect(Collectors.toMap(o -> o.getKey(), o -> o.getValue()))))
+				.toObject(new ParameterizedTypeReference<PagedResources<Resource<EventDTO>>>() {
+				});
 		injectSpeakers(eventResponse);
 		return mapToDTOList(eventResponse);
 	}
 
-	private List<EventDTO> mapToDTOList(Resources<Resource<EventDTO>> eventResponse) {
-		return eventResponse.getContent().stream().map(Resource::getContent).collect(Collectors.toList());
+	private PagedResources<EventDTO> mapToDTOList(PagedResources<Resource<EventDTO>> eventResponse) {
+		List<EventDTO> events = eventResponse.getContent().stream().map(Resource::getContent).collect(Collectors.toList());
+		return new PagedResources<>(events, eventResponse.getMetadata());
 	}
 
-	private void injectSpeakers(Resources<Resource<EventDTO>> eventResponse) {
+	private void injectSpeakers(PagedResources<Resource<EventDTO>> eventResponse) {
 		if (eventResponse != null) {
 			ParameterizedTypeReference<Resources<Resource<SpeakerDTO>>> speakerType = new ParameterizedTypeReference<Resources<Resource<SpeakerDTO>>>() {
 			};
@@ -58,17 +68,31 @@ public class EventDaoImpl implements EventDao {
 	}
 
 	@Override
-	public List<EventDTO> getEventsWithTitleContaining(String title) {
-		Resources<Resource<EventDTO>> eventResponse = traverson.follow("events", "search", "findByTitleContaining").withTemplateParameters(Collections.singletonMap("title", title)).toObject(new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
+	public PagedResources<EventDTO> getEventsWithTitleContaining(String title, int page) {
+		PagedResources<Resource<EventDTO>> eventResponse = traverson
+				.follow("events", "search", "findByTitleContaining")
+				.withTemplateParameters(Collections.unmodifiableMap(Stream.of(
+						new SimpleEntry<String, Object>("title", title),
+						new SimpleEntry<String, Object>("page", page),
+						new SimpleEntry<String, Object>("size", 5))
+						.collect(Collectors.toMap(o -> o.getKey(), o -> o.getValue()))))
+				.toObject(new ParameterizedTypeReference<PagedResources<Resource<EventDTO>>>() {
 		});
 		injectSpeakers(eventResponse);
 		return mapToDTOList(eventResponse);
 	}
 
 	@Override
-	public List<EventDTO> getEventsWithDescriptionContaining(String description) {
-		Resources<Resource<EventDTO>> eventResponse = traverson.follow("events", "search", "findByDescriptionContaining").withTemplateParameters(Collections.singletonMap("description", description)).toObject(new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
-		});
+	public PagedResources<EventDTO> getEventsWithDescriptionContaining(String description, int page) {
+		PagedResources<Resource<EventDTO>> eventResponse = traverson
+				.follow("events", "search", "findByDescriptionContaining")
+				.withTemplateParameters(Collections.unmodifiableMap(Stream.of(
+						new SimpleEntry<String, Object>("description", description),
+						new SimpleEntry<String, Object>("page", page),
+						new SimpleEntry<String, Object>("size", 5))
+						.collect(Collectors.toMap(o -> o.getKey(), o -> o.getValue()))))
+				.toObject(new ParameterizedTypeReference<PagedResources<Resource<EventDTO>>>() {
+				});
 		injectSpeakers(eventResponse);
 		return mapToDTOList(eventResponse);
 	}

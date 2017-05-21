@@ -1,13 +1,12 @@
 package de.andrena.springworkshop.facades;
 
 import de.andrena.springworkshop.dto.EventDTO;
-
-import java.util.List;
+import org.springframework.hateoas.PagedResources;
 
 public interface EventFacade {
-    List<EventDTO> getAllEvents();
+    PagedResources<EventDTO> getAllEvents(int page);
 
-    List<EventDTO> getEventsWithDescriptionContaining(String description);
+    PagedResources<EventDTO> getEventsWithDescriptionContaining(String description, int page);
 
-    List<EventDTO> getEventWithTitle(String title);
+    PagedResources<EventDTO> getEventWithTitle(String title, int page);
 }

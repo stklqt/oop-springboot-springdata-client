@@ -74,5 +74,4 @@ public class EventDTO {
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
-
 }
