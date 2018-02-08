@@ -35,9 +35,4 @@ public class AgendaController {
         model.addAttribute("title", title);
         return "searchPage";
     }
-
-    @RequestMapping(value = "/reactAgenda")
-    public String reactAgenda() {
-        return "mainPageReact";
-    }
 }
