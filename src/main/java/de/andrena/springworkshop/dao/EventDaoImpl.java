@@ -56,7 +56,14 @@ public class EventDaoImpl implements EventDao {
     @Override
     public List<EventDTO> getEventsWithTitleContaining(String title) {
         //not yet implemented :(
-        return null;
+        final String path = "/events/search/findByTitleContaining";
+        final UriComponentsBuilder apiUrlBuilder = UriComponentsBuilder.newInstance();
+        final String url = apiUrlBuilder.scheme(scheme).host(host).path(path).queryParam("title", title).build().toString();
+
+        Resources<Resource<EventDTO>> eventResponse = sendRequest(url, new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
+        });
+
+        return  mapToDTOList(eventResponse);
     }
 
     @Override

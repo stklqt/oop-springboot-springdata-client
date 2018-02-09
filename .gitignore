@@ -1,19 +1,8 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
+.DSStore
+target
 .settings
-.springBeans
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.ipr
-
-/node_modules/
-/springworkshop-client.iml
-/src/main/resources/static/built/
+.classpath
+.project
+.idea/
+*.iml
+~$*.ppt
