@@ -1,6 +1,7 @@
 package de.andrena.springworkshop.dao;
 
 import de.andrena.springworkshop.dto.EventDTO;
+import de.andrena.springworkshop.dto.SpeakerDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Resource;
@@ -34,6 +35,7 @@ public class EventDaoImpl implements EventDao {
         Resources<Resource<EventDTO>> eventResponse = sendRequest(url, new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
         });
 
+        linkSpeaker(eventResponse);
         return mapToDTOList(eventResponse);
     }
 
@@ -59,6 +61,7 @@ public class EventDaoImpl implements EventDao {
         Resources<Resource<EventDTO>> eventResponse = sendRequest(requestUrl, new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
         });
 
+        linkSpeaker(eventResponse);
         return mapToDTOList(eventResponse);
     }
 
@@ -67,7 +70,6 @@ public class EventDaoImpl implements EventDao {
         //not yet implemented :(
         return null;
     }
-
 
 
     /*  HELPER METHODS */
@@ -80,6 +82,22 @@ public class EventDaoImpl implements EventDao {
         Resources<Resource<EventDTO>> eventResponse = sendRequest(url, new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
         });
         return eventResponse.getLink(link).getHref();
+    }
+
+
+    private void linkSpeaker(Resources<Resource<EventDTO>> eventResponse) {
+        ParameterizedTypeReference<Resources<Resource<SpeakerDTO>>> speakerType
+                = new ParameterizedTypeReference<Resources<Resource<SpeakerDTO>>>() {
+        };
+
+        for (Resource<EventDTO> event : eventResponse) {
+            String speakersUrl = event.getLink("speakers").getHref();
+            Resources<Resource<SpeakerDTO>> speakerResources = sendRequest(speakersUrl, speakerType);
+            if (speakerResources != null) {
+                List<SpeakerDTO> speakerDTOList = speakerResources.getContent().stream().map(Resource::getContent).collect(Collectors.toList());
+                event.getContent().setSpeakers(speakerDTOList);
+            }
+        }
     }
 
 }
