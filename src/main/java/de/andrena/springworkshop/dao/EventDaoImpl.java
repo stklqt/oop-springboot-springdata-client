@@ -1,7 +1,6 @@
 package de.andrena.springworkshop.dao;
 
 import de.andrena.springworkshop.dto.EventDTO;
-import de.andrena.springworkshop.dto.SpeakerDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Resource;
@@ -31,10 +30,7 @@ public class EventDaoImpl implements EventDao {
 
     @Override
     public List<EventDTO> getAllEvents() {
-        final String path = "/events";
-        final UriComponentsBuilder apiUrlBuilder = UriComponentsBuilder.newInstance();
-        final String url = apiUrlBuilder.scheme(scheme).host(host).path(path).build().toString();
-
+        final String url = getUrl("events");
         Resources<Resource<EventDTO>> eventResponse = sendRequest(url, new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
         });
 
@@ -55,20 +51,35 @@ public class EventDaoImpl implements EventDao {
 
     @Override
     public List<EventDTO> getEventsWithTitleContaining(String title) {
-        final String path = "/events/search/findByTitleContaining";
-        final UriComponentsBuilder apiUrlBuilder = UriComponentsBuilder.newInstance();
-        final String url = apiUrlBuilder.scheme(scheme).host(host).path(path).queryParam("title", title).build().toString();
+        final String searchPath = "/search/findByTitleContaining";
+        final String url = getUrl("events") + searchPath;
+        final UriComponentsBuilder apiUrlBuilder = UriComponentsBuilder.fromHttpUrl(url);
+        final String requestUrl = apiUrlBuilder.queryParam("title", title).build().toString();
 
-        Resources<Resource<EventDTO>> eventResponse = sendRequest(url, new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
+        Resources<Resource<EventDTO>> eventResponse = sendRequest(requestUrl, new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
         });
 
-        return  mapToDTOList(eventResponse);
+        return mapToDTOList(eventResponse);
     }
 
     @Override
     public List<EventDTO> getEventsWithDescriptionContaining(String description) {
         //not yet implemented :(
         return null;
+    }
+
+
+
+    /*  HELPER METHODS */
+    private String getUrl(String link) {
+        final String path = "/";
+        final UriComponentsBuilder apiUrlBuilder = UriComponentsBuilder.newInstance();
+
+        String url = apiUrlBuilder.scheme(scheme).host(host).path(path).build().toString();
+
+        Resources<Resource<EventDTO>> eventResponse = sendRequest(url, new ParameterizedTypeReference<Resources<Resource<EventDTO>>>() {
+        });
+        return eventResponse.getLink(link).getHref();
     }
 
 }
